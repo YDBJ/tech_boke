@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -8,12 +9,13 @@
     <link rel="stylesheet" href="/assets/layui/css/layui.css">
     <link rel="stylesheet" href="/assets/css/login.css">
 </head>
+
 <body>
     <div class="login">
         <h1>小猪博客管理系统</h1>
-        <form method="post">
-            <input type="text" name="username" placeholder="Username" />
-            <input type="password" name="password" placeholder="Password"  />
+        <form method="post" id="entry">
+            <input type="text" name="username" placeholder="Username" id="username" />
+            <input type="password" name="password" placeholder="Password" id="password" />
             <button type="submit" id="loginBtn" class="btn btn-primary btn-block btn-large">Login In</button>
         </form>
     </div>
@@ -21,9 +23,23 @@
 <script src="/assets/js/jquery.min.js"></script>
 <script src="/assets/layui/layui.js"></script>
 <script>
-    $("#loginBtn").on('click',()=>{
+    $("#loginBtn").on('click', () => {
         layer.msg('login')
+        // formData 拿不到数据
+        // const formdata = new FormData($('#entry')[0]);
+        // const g = formdata.get('username');
+        // $.ajax({
+        //     type: 'post',
+        //     url: 'http://127.0.0.1:3000/add',
+        //     data: formdata,
+        //     contentType: false, // 告诉jQuery不要去设置Content-Type请求头
+        //     processData: false, // 告诉jQuery不要去处理发送的数据
+        //     dataType: "json"
+        // }).then(res=>{
+        //     console.log('res',res);
+        // })
         return false;
     })
 </script>
+
 </html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>德德后台管理系统</title>
+  <link rel="stylesheet" href="/assets/layui/css/layui.css">
+</head>
+
+<body>
+  <div class="layui-layout layui-layout-admin">
+    <!-- 共享头部 -->
+    {{include "./share/shareHead.html"}}
+
+    <!-- 共享左部 -->
+    {{include "./share/shareBody.html"}}
+
+    <div class="layui-body ">
+      <!-- 内容主体区域 -->
+      <div style="padding: 15px;" id="classify_form">
+        <table class="layui-hide layui-table" lay-data="{url:'/css', id:'test3', escape: true}" lay-filter="test3">
+          <thead>
+            <tr>
+              <!-- 复选框 -->
+              <!-- <th lay-data="{type:'checkbox'}">ID</th> -->
+              <th lay-data="{field:'id', width:80, sort: true}">序号</th>
+              <th lay-data="{field:'title', width:120, sort: true, edit: 'text'}">标题</th>
+              <th lay-data="{field:'content', edit: 'text', minWidth: 150}">内容</th>
+              <th lay-data="{field:'author', width:80, edit: 'text'}">作者</th>
+              <th lay-data="{field:'status', edit: 'text', minWidth: 100}">状态</th>
+              <th lay-data="{field:'add_time', sort: true, edit: 'datetime'}">时间</th>
+              <th lay-data="{field:'pic', sort: true, edit: 'varchar'}">封面</th>
+              <th lay-data="{field:'cate_id', sort: true, edit: 'int'}">分类</th>
+              <th lay-data="{fixed: 'right',title: '操作',toolbar: '#barDemo',width: 150}"></th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+    </div>
+
+    <div class="layui-footer">
+      <!-- 底部固定区域 -->
+      底部固定区域
+    </div>
+  </div>
+  <script src="/assets/layui/layui.js"></script>
+  <script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-danger layui-btn-xs out" lay-event="del">删除</a>
+  </script>
+  <script>
+    layui.use(['element', 'layer', 'util'], function () {
+      var element = layui.element,
+        layer = layui.layer,
+        util = layui.util,
+        $ = layui.$;
+
+      //头部事件
+      util.event('lay-header-event', {
+        //左侧菜单事件
+        menuLeft: function (othis) {
+          layer.msg('展开左侧菜单的操作111', {
+            icon: 0
+          });
+        },
+        menuRight: function () {
+          layer.open({
+            type: 1,
+            content: '<div style="padding: 15px;">处理右侧面板的操作234</div>',
+            area: ['260px', '100%'],
+            offset: 'rt' //右上角
+              ,
+            anim: 5,
+            shadeClose: true
+          });
+        }
+      });
+
+    });
+  </script>
+  <!-- 获取数据库数据 -->
+  <script>
+    layui.use('table', function () {
+      var table = layui.table;
+      //监听行工具事件
+      table.on('tool(test3)', function (obj) {
+        var data = obj.data;
+        console.log(obj)
+        if (obj.event === 'del') {
+          layer.confirm('确认删除吗？', function (index) {
+            obj.del();
+            layer.close(index);
+            let {data} = obj
+            $.ajax({
+              type: 'get',
+              url: `http://localhost:3000/deluser?id=${data.id}`
+            })
+          });
+
+        } else if (obj.event === 'edit') {
+          layer.prompt({
+            formType: 2,
+            value: data.email
+          }, function (value, index) {
+            obj.update({
+              email: value
+            });
+            layer.close(index);
+          });
+        }
+      });
+      // table.render({
+      //   elem: '#test3',
+      //   url: '/css',
+      //   cols: [
+      //     [{
+      //       field: 'id',
+      //       width: 80,
+      //       title: '序号1',
+      //       sort: true
+      //     }, {
+      //       field: 'title',
+      //       width: 100,
+      //       title: '标题2'
+      //     }, {
+      //       field: 'content',
+      //       width: 80,
+      //       title: '内容3',
+      //       sort: true
+      //     }, {
+      //       field: 'author',
+      //       width: 80,
+      //       title: '作者4'
+      //     }, {
+      //       field: 'status',
+      //       title: '状态5',
+      //       minWidth: 150
+      //     }, {
+      //       field: 'add_time',
+      //       width: 80,
+      //       title: '时间6',
+      //       sort: true
+      //     }, {
+      //       field: 'pic',
+      //       width: 80,
+      //       title: '封面7',
+      //       sort: true
+      //     }, {
+      //       field: 'cate_id',
+      //       width: 80,
+      //       title: '分类8'
+      //     }, {
+      //       fixed: 'right',
+      //       title: '操作9',
+      //       toolbar: '#barDemo',
+      //       width: 150
+      //     }]
+      //   ]
+      // });
+    });
+  </script>
+
+  <script>
+    layui.use(['table', 'util'], function () {
+      var table = layui.table,
+        util = layui.util;
+      $ = layui.$;
+      //监听单元格编辑
+      table.on('edit(test3)', async function (obj) {
+        const {
+          data
+        } = obj;
+        console.log(obj);
+        await $.post('/edit', data)
+        console.log(data);
+        layer.msg('编辑成功')
+      });
+    });
+  </script>
+
+</body>
+
+</html>
