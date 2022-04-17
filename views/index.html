@@ -9,76 +9,23 @@
 </head>
 
 <body>
+  <!-- query - get
+  body - post
+  param - 路由参数 -->
   <div class="layui-layout layui-layout-admin">
-    <div class="layui-header">
-      <div class="layui-logo layui-hide-xs layui-bg-black">小猪博客管理系统</div>
-      <!-- 头部区域（可配合layui 已有的水平导航） -->
-      <ul class="layui-nav layui-layout-left">
-        <!-- 移动端显示 -->
-        <li class="layui-nav-item layui-show-xs-inline-block layui-hide-sm" lay-header-event="menuLeft">
-          <i class="layui-icon layui-icon-spread-left"></i>
-        </li>
+    <!-- 共享头部 -->
+    {{include "./share/shareHead.html"}}
 
-        <li class="layui-nav-item layui-hide-xs"><a href="">nav 1</a></li>
-        <li class="layui-nav-item layui-hide-xs"><a href="">nav 2</a></li>
-        <li class="layui-nav-item layui-hide-xs"><a href="">nav 3</a></li>
-        <li class="layui-nav-item">
-          <a href="javascript:;">nav groups</a>
-          <dl class="layui-nav-child">
-            <dd><a href="">menu 11</a></dd>
-            <dd><a href="">menu 22</a></dd>
-            <dd><a href="">menu 33</a></dd>
-          </dl>
-        </li>
-      </ul>
-      <ul class="layui-nav layui-layout-right">
-        <li class="layui-nav-item layui-hide layui-show-md-inline-block">
-          <a href="javascript:;">
-            <img src="https://img2.baidu.com/it/u=1012304310,3936720750&fm=26&fmt=auto&gp=0.jpg" class="layui-nav-img">
-            xiaoluo
-          </a>
-          <dl class="layui-nav-child">
-            <dd><a href="">个人信息</a></dd>
-            <dd><a href="">修改密码</a></dd>
-            <dd><a href="./login.html">退出</a></dd>
-          </dl>
-        </li>
-        <li class="layui-nav-item" lay-header-event="menuRight" lay-unselect>
-          <a href="javascript:;">
-            <i class="layui-icon layui-icon-more-vertical"></i>
-          </a>
-        </li>
-      </ul>
-    </div>
-
-    <div class="layui-side layui-bg-black">
-      <div class="layui-side-scroll">
-        <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
-        <ul class="layui-nav layui-nav-tree" lay-filter="test">
-          <li class="layui-nav-item"><a href="javascript:;">首页</a></li>
-          <li class="layui-nav-item layui-nav-itemed">
-            <a class="" href="javascript:;">分类管理</a>
-            <dl class="layui-nav-child">
-              <dd><a href="/classify">分类列表</a></dd>
-              <dd><a href="/article">文章列表</a></dd>
-            </dl>
-          </li>
-          <li class="layui-nav-item">
-            <a href="javascript:;">menu group </a>
-            <dl class="layui-nav-child">
-              <dd><a href="javascript:;">list 1</a></dd>
-              <dd><a href="javascript:;">list 2</a></dd>
-            </dl>
-          </li>
-
-          <li class="layui-nav-item"><a href="">the links</a></li>
-        </ul>
-      </div>
-    </div>
+    <!-- 共享左部 -->
+    {{include "./share/shareBody.html"}}
 
     <div class="layui-body">
       <!-- 内容主体区域 -->
-      <div style="padding: 15px;">内容主体区域.</div>
+      <h4 style="padding: 15px;" id="last_login_date"></h4>
+      <div style="padding: 15px;display:flex">
+        <div id="cate" style="width: 600px;height:400px;"></div>
+        <div id="art" style="width: 600px;height:400px;"></div>
+      </div>
     </div>
 
     <div class="layui-footer">
@@ -87,14 +34,16 @@
     </div>
   </div>
   <script src="/assets/layui/layui.js"></script>
+  <script src="https://cdn.bootcdn.net/ajax/libs/js-cookie/3.0.1/js.cookie.min.js"></script>
+  <script src="/assets/js/echarts.min.js"></script>
+
   <script>
     //JS 
-    layui.use(['element', 'layer', 'util'], function () {
+    layui.use(['element', 'layer', 'util'], async function () {
       var element = layui.element,
         layer = layui.layer,
         util = layui.util,
         $ = layui.$;
-
       //头部事件
       util.event('lay-header-event', {
         //左侧菜单事件
@@ -115,8 +64,90 @@
           });
         }
       });
-
     });
+  </script>
+
+  <!-- 数据可视化 -->
+  <script>
+    // 获取分类统计的数据
+    $.get('/cateCount').then((res) => {
+      // console.log('res', res);
+      // 成功只有再去渲染图表
+      // 初始化图表
+      let names = []; // 保存分类名称
+      let totals = []; // 保存文章分类的总文章数
+      res.map(v => {
+        console.log(v);
+        if (!v.text) {
+          v.text = '未分类'
+        }
+        names.push(v.text);
+        totals.push(v.total)
+      })
+      let dom = document.getElementById("cate")
+      let text = '分类文章统计'
+      initEchart(dom, names, totals, text, 'bar');
+    })
+    // 获取每月文章统计的数据
+    $.get('/artCount', (res) => {
+      // 成功只有再去渲染图表
+      // 初始化图表
+      let months = []; // 保存分类名称
+      let totals = []; // 保存文章分类的总文章数
+      res.map(v => {
+        months.push(v.month + '月');
+        totals.push(v.total)
+      })
+      let dom = document.getElementById("art")
+      let text = '每月文章统计'
+      initEchart(dom, months, totals, text, 'line');
+    })
+    // 加载图表   只有数据回来之后才能获取  所以要封装 在调用
+    function initEchart(dom, names, total, text, type) {
+      // 基于准备好的dom，初始化echarts实例
+      var myChart = echarts.init(dom);
+      // 指定图表的配置项和数据
+      var option = {
+        title: {
+          text: text,
+          subtext: "文章数", // 单位
+          textStyle: {
+            color: '#333' //主标题颜色
+          }
+        },
+        color: "#d9ebf9",
+        // 提示框组件
+        tooltip: {
+          show: true,
+          axisPointer: {
+            type: 'cross'
+          }
+        },
+        // 图例组件
+        legend: {
+          data: ['销量123123']
+        },
+        xAxis: {
+          data: names
+        },
+        yAxis: {},
+        series: [{
+          name: '文章篇数',
+          type: type, // bar-柱状 line-折现 pie-饼状
+          data: total,
+          label: {
+            show: true,
+            fontSize: 16,
+            showBackground: true,
+            backgroundStyle: {
+              color: 'rgba(180, 180, 180, 0.2)'
+            }
+          }
+        }]
+      };
+      // 使用刚指定的配置项和数据显示图表。
+      myChart.setOption(option);
+    }
   </script>
 </body>
 

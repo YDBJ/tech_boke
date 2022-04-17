@@ -24,20 +24,35 @@
 <script src="/assets/layui/layui.js"></script>
 <script>
     $("#loginBtn").on('click', () => {
-        layer.msg('login')
-        // formData 拿不到数据
-        // const formdata = new FormData($('#entry')[0]);
-        // const g = formdata.get('username');
-        // $.ajax({
-        //     type: 'post',
-        //     url: 'http://127.0.0.1:3000/add',
-        //     data: formdata,
-        //     contentType: false, // 告诉jQuery不要去设置Content-Type请求头
-        //     processData: false, // 告诉jQuery不要去处理发送的数据
-        //     dataType: "json"
-        // }).then(res=>{
-        //     console.log('res',res);
-        // })
+        // 获取表单项所有数据
+        const data = $("#entry").serialize()
+        console.log(data);
+        // 一个一个获取
+        // let username = $("input[name='username']").val()
+        // let password = $("input[name='password']").val()
+        $.ajax({
+            type: 'post',
+            url: 'http://127.0.0.1:3000/join',
+            data
+        }).then(res => {
+            console.log('res', res);
+            const {
+                code,
+                message
+            } = res
+            if (code == 0) {
+                layer.msg('登录成功', {
+                    icon: 1
+                })
+                setTimeout(() => {
+                    location.href = '/'
+                }, 500)
+            } else {
+                layer.msg('账号密码输入错误', {
+                    icon: 2
+                })
+            }
+        })
         return false;
     })
 </script>

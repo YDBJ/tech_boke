@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>德德后台管理系统</title>
+  <link rel="stylesheet" href="/assets/layui/css/layui.css">
+</head>
+
+<body>
+  <div class="layui-layout layui-layout-admin">
+    <!-- <div class="layui-header">
+      <div class="layui-logo layui-hide-xs layui-bg-black">小猪博客管理系统</div>
+      头部区域（可配合layui 已有的水平导航）
+      <ul class="layui-nav layui-layout-left">
+        移动端显示
+        <li class="layui-nav-item layui-show-xs-inline-block layui-hide-sm" lay-header-event="menuLeft">
+          <i class="layui-icon layui-icon-spread-left"></i>
+        </li>
+
+        <li class="layui-nav-item layui-hide-xs"><a href="">nav 1</a></li>
+        <li class="layui-nav-item layui-hide-xs"><a href="">nav 2</a></li>
+        <li class="layui-nav-item layui-hide-xs"><a href="">nav 3</a></li>
+        <li class="layui-nav-item">
+          <a href="javascript:;">nav groups</a>
+          <dl class="layui-nav-child">
+            <dd><a href="">menu 11</a></dd>
+            <dd><a href="">menu 22</a></dd>
+            <dd><a href="">menu 33</a></dd>
+          </dl>
+        </li>
+      </ul>
+      <ul class="layui-nav layui-layout-right">
+        <li class="layui-nav-item layui-hide layui-show-md-inline-block">
+          <a href="javascript:;">
+            <img src="https://img2.baidu.com/it/u=1012304310,3936720750&fm=26&fmt=auto&gp=0.jpg" class="layui-nav-img">
+            xiaoluo
+          </a>
+          <dl class="layui-nav-child">
+            <dd><a href="">个人信息</a></dd>
+            <dd><a href="">修改密码</a></dd>
+            <dd><a href="./login.html">退出</a></dd>
+          </dl>
+        </li>
+        <li class="layui-nav-item" lay-header-event="menuRight" lay-unselect>
+          <a href="javascript:;">
+            <i class="layui-icon layui-icon-more-vertical"></i>
+          </a>
+        </li>
+      </ul>
+    </div> -->
+
+    <!-- <div class="layui-side layui-bg-black">
+      <div class="layui-side-scroll">
+        左侧导航区域（可配合layui已有的垂直导航）
+        <ul class="layui-nav layui-nav-tree" lay-filter="test">
+          <li class="layui-nav-item"><a href="javascript:;">首页</a></li>
+          <li class="layui-nav-item layui-nav-itemed">
+            <a class="" href="javascript:;">分类管理</a>
+            <dl class="layui-nav-child">
+              <dd><a href="/classify">分类列表</a></dd>
+              <dd><a href="/article">文章列表</a></dd>
+            </dl>
+          </li>
+          <li class="layui-nav-item">
+            <a href="javascript:;">menu group </a>
+            <dl class="layui-nav-child">
+              <dd><a href="javascript:;">list 1</a></dd>
+              <dd><a href="javascript:;">list 2</a></dd>
+            </dl>
+          </li>
+
+          <li class="layui-nav-item"><a href="">the links</a></li>
+        </ul>
+      </div>
+    </div> -->
+
+    <!-- 共享头部 -->
+    {{include "./share/shareHead.html"}}
+
+    <!-- 共享左部 -->
+    {{include "./share/shareBody.html"}}
+
+    <div class="layui-body">
+      <!-- 内容主体区域 -->
+      <div style="padding: 15px;">
+        <form class="layui-form" lay-filter="formTest" id="logoFrom">
+          <div class="layui-form-item">
+            <label class="layui-form-label">博客名</label>
+            <div class="layui-input-inline">
+              <input type="text" name="blog_name" required lay-verify="required" placeholder="请输入标题" autocomplete="off"
+                class="layui-input">
+            </div>
+          </div>
+          <div class="layui-form-item">
+            <label class="layui-form-label">logo</label>
+            <div class="layui-input-inline">
+              <!-- onchange="uploadFile(this)"  内部加 this 是为了上传二进制文件 -->
+              <input type="file" name="logopic" id="logopic" onchange="logoFile(this)" style="display:none">
+              <a class="layui-btn" href="javascript:;" id="uplogo" style="font-size: 20px; margin: 20px;">+</a>
+              <img src='' id="logoPreview" alt="" style="width:80px">
+            </div>
+          </div>
+          <!-- <div class="layui-form-item">
+              <label class="layui-form-label">主题</label>
+              <div class="layui-input-block">
+                  <select name="city" lay-verify="required">
+                      <option value="0">暗灰色</option>
+                  </select>
+              </div>
+          </div> -->
+          <div class="layui-form-item">
+            <div class="layui-input-block">
+              <button class="layui-btn" lay-submit lay-filter="formDemo" id="btn">立即提交</button>
+              <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="layui-footer">
+      <!-- 底部固定区域 -->
+      底部固定区域
+    </div>
+  </div>
+  <script src="/assets/layui/layui.js"></script>
+  <script>
+    // $("#logoPreview").attr('src', logo)
+    // 上传文件
+    let file = ''
+    async function logoFile(fileEle) {
+      file = fileEle.files[0];
+      // 预览图片 base64
+      const fileReader = new FileReader();
+      fileReader.readAsDataURL(file) // 读取 异步过程 会触发 onload
+      fileReader.onload = function () {
+        const base64 = this.result
+        $("#logoPreview").attr('src', base64)
+      }
+      console.log('file', file);
+      let formData = new FormData($('#logoFrom')[0])
+      if (file) {
+        await $.ajax({
+          type: "post",
+          url: "/logoApi",
+          data: formData,
+          processData: false, // 告诉jquery不需要处理数据
+          contentType: false, // 不需要设置编码
+          dataType: "json",
+          success: function (data) {
+            console.log('data', data);
+            layer.msg(data.message)
+            let {
+              logo
+            } = JSON.parse(Cookies.get('logo'));
+            console.log(JSON.parse(Cookies.get('logo')));
+            $("#logo").attr('src', logo)
+          }
+        })
+
+      }
+    }
+
+
+    //JS 
+    layui.use(['element', 'layer', 'util'], async function () {
+      var element = layui.element,
+        layer = layui.layer,
+        util = layui.util,
+        $ = layui.$;
+
+      //头部事件
+      util.event('lay-header-event', {
+        //左侧菜单事件
+        menuLeft: function (othis) {
+          layer.msg('展开左侧菜单的操作111', {
+            icon: 0
+          });
+        },
+        menuRight: function () {
+          layer.open({
+            type: 1,
+            content: '<div style="padding: 15px;">处理右侧面板的操作234</div>',
+            area: ['260px', '100%'],
+            offset: 'rt' //右上角
+              ,
+            anim: 5,
+            shadeClose: true
+          });
+        }
+      });
+
+      // 设置博客名
+      $('#btn').on('click', function () {
+        const upload = layui.upload;
+        const element = layui.element;
+        let val = $("input[name='blog_name']").val()
+        $.get({
+          url: `/inter?name=${val}`,
+        }).then(res => {
+          console.log('res', res);
+          layer.msg('设置成功')
+          setTimeout(() => {
+            location.reload();
+          }, 800)
+        })
+        return false
+      })
+
+      // 上传文件按钮
+      $("#uplogo").on('click', () => {
+        $("#logopic")[0].click();
+      })
+
+    });
+  </script>
+
+</body>
+
+</html>

@@ -6,11 +6,30 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="">
 </head>
+<style>
+    #logoBox {
+        position: absolute;
+    }
+
+    #logo {
+        position: relative;
+        top: 14px;
+        left: 12px;
+        z-index: 999999;
+    }
+</style>
 
 <body>
     <div class="layui-header">
-        <div class="layui-logo layui-hide-xs layui-bg-black">小猪博客管理系统</div>
+        <a href="javascript:;" id="logoBox">
+            <img id="logo" src="http://www.atoolbox.net/UploadFiles/20200516/KUA202005162006380.png"
+                class="layui-nav-img">
+        </a>
+        <div class="layui-logo layui-hide-xs layui-bg-black" id="logoText">
+            小猪博客管理系统
+        </div>
         <!-- 头部区域（可配合layui 已有的水平导航） -->
         <ul class="layui-nav layui-layout-left">
             <!-- 移动端显示 -->
@@ -33,14 +52,13 @@
         <ul class="layui-nav layui-layout-right">
             <li class="layui-nav-item layui-hide layui-show-md-inline-block">
                 <a href="javascript:;">
-                    <img src="https://img2.baidu.com/it/u=1012304310,3936720750&fm=26&fmt=auto&gp=0.jpg"
-                        class="layui-nav-img">
-                    xiaoluo
+                    <img id="avatar" src="" class="layui-nav-img">
+                    <span id="username">请登录</span>
                 </a>
                 <dl class="layui-nav-child">
-                    <dd><a href="">个人信息</a></dd>
-                    <dd><a href="">修改密码</a></dd>
-                    <dd><a href="./login.html">退出</a></dd>
+                    <dd><a href="javascript:;" id="personalData">个人信息</a></dd>
+                    <dd><a href="javascript:;" id="revise">修改密码</a></dd>
+                    <dd><a href="javascript:;" id="logout">退出</a></dd>
                 </dl>
             </li>
             <li class="layui-nav-item" lay-header-event="menuRight" lay-unselect>
@@ -51,5 +69,316 @@
         </ul>
     </div>
 </body>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/js-cookie/3.0.1/js.cookie.min.js"></script>
+<script>
+    // 根据本地存储的数据进行处理 title 怼到页面上去
+    // 获取本地存储
+    let logoText = localStorage.getItem('name')
+    // console.log(logoText);
+    $('#logoText').text(logoText)
+    $.get({
+        url: '/title'
+    }).then(res => {
+        let {
+            name,
+            val
+        } = res[0];
+        // 设置本地存储
+        // 需要保存到本地 这样就不需要每次都请求数据  供其他页面使用
+        localStorage.setItem('name', val)
+        $('#logoText').text(val)
+    })
+
+    // 退出登录
+    $("#logout").on('click', async (event) => {
+        const data = await $.post('/quite')
+        const {
+            message,
+            code
+        } = data
+        console.log('data', data);
+        if (code === 0) {
+            layer.msg(message, {
+                icon: 1
+            })
+            setTimeout(() => {
+                location.href = '/login'
+            }, 500)
+        } else {
+            alert('退出失败')
+        }
+    })
+</script>
+<script>
+    // 获取cookie设置到header页面中，显示用户的用户名信息
+    let {
+        password,
+        username,
+        age,
+        intro,
+        avatar
+    } = JSON.parse(Cookies.get('userInfo'))
+    // 回显图片
+    $('#avatar').attr('src', avatar)
+    $("#username").text(username)
+    console.log('head', JSON.parse(Cookies.get('userInfo')));
+    console.log('123', JSON.parse(Cookies.get('logo')));
+    let {
+        logo
+    } = JSON.parse(Cookies.get('logo'))
+
+    $('#logo').attr('src', logo)
+</script>
+<script>
+    let mould = ''
+    let index = ''
+    // 个人信息
+    $('#personalData').on('click', function () {
+        // 获取cookie设置到header页面中，显示用户的信息
+        let {
+            password,
+            username,
+            age,
+            avatar,
+            intro
+        } = JSON.parse(Cookies.get('userInfo'))
+        console.log('123', JSON.parse(Cookies.get('userInfo')));
+        mould =
+            `
+          <div class="layui-form-item">
+            <label class="layui-form-label">用户名</label>
+            <div class="layui-input-inline" style="margin-top: 10px;">
+              <input type="text" name="username" value='${username}' lay-verify="title" autocomplete="off"  class="layui-input">
+            </div>
+          </div>
+          <div class="layui-form-item">
+            <label class="layui-form-label">年龄</label>
+            <div class="layui-input-inline" style="margin-top: 10px;">
+              <input type="text" name="age" value='${age}' lay-verify="title" autocomplete="off"  class="layui-input">
+            </div>
+          </div>
+          <div class="layui-form-item" style="margin-top: 20px;">
+            <label class="layui-form-label">头像</label>
+            <div class="layui-input-block">
+              <div class="layui-upload" style="height: 54px; display: flex;">
+                <button type="button" class="layui-btn layui-btn-primary" id="test1">上传头像</button>
+                <div class="layui-upload-list" style="margin: -3px;margin-left: 23px;">
+                  <img class="layui-upload-img" id="demo1" style="width: 80px;height: 80px;>
+                  <p id="demoText" ></p>
+                </div>
+              </div> 
+              <div style="width: 95px;">
+                  <div class="layui-progress layui-progress-big" lay-showpercent="yes" lay-filter="demo">
+                    <div class="layui-progress-bar" lay-percent=""></div>
+                  </div>
+                </div>
+            </div>
+          </div>
+          <div class="layui-form-item" style="margin-top: 40px;">
+            <label class="layui-form-label">个性签名</label>
+            <div class="layui-input-inline">
+              <textarea name="intro" class="layui-textarea" id="" cols="30" rows="5">${intro}</textarea>
+            </div>
+          </div>
+          <div style="text-align:center;">
+            <button type="button" id="saveUser" class="layui-btn layui-btn-primary">保存信息</button>
+          </div>
+        `
+        index = layer.open({
+            title: '个人信息',
+            type: 1,
+            area: ['350px', '490px'], //宽高
+            content: mould,
+            success: function (layero, index) {
+                // 初始化上传
+                initUpload();
+                // 回显图片
+                let {
+                    avatar
+                } = JSON.parse(Cookies.get('userInfo'));
+                console.log('avatar', avatar);
+                $("#demo1").attr('src', avatar)
+            }
+        });
+    })
+
+    // 上传文件
+    function initUpload() {
+        //常规使用 - 普通图片上传
+        const upload = layui.upload;
+        const element = layui.element;
+        var uploadInst = upload.render({
+            elem: '#test1',
+            url: '/avatar' //此处用的是第三方的 http 请求演示，实际使用时改成您自己的上传接口即可。
+                ,
+            before: function (obj) {
+                //预读本地文件示例，不支持ie8
+                obj.preview(function (index, file, result) {
+                    $('#demo1').attr('src', result); //图片链接（base64）
+                });
+                element.progress('demo', '0%'); //进度条复位
+                layer.msg('上传中', {
+                    icon: 16,
+                    time: 0
+                });
+            },
+            done: function (res) {
+                console.log(res);
+                if (res.code === 0) {
+                    let {
+                        avatar
+                    } = JSON.parse(Cookies.get('userInfo'));
+                    // 回显图片
+                    $('#avatar').attr('src', avatar)
+                    return layer.msg('上传成功');
+                } else {
+                    return layer.msg('上传失败');
+                }
+                $('#demoText').html(''); //置空上传失败的状态
+            },
+            error: function () {
+                    //演示失败状态，并实现重传
+                    var demoText = $('#demoText');
+                    demoText.html(
+                        '<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>'
+                    );
+                    demoText.find('.demo-reload').on('click', function () {
+                        uploadInst.upload();
+                    });
+                }
+                //进度条
+                ,
+            progress: function (n, elem, e) {
+                element.progress('demo', n + '%'); //可配合 layui 进度条元素使用
+                if (n == 100) {
+                    layer.msg('上传完毕', {
+                        icon: 1
+                    });
+                }
+            }
+        });
+    }
+
+    // 保存用户信息
+    $(document).on('click', "#saveUser", async () => {
+        const {
+            id
+        } = JSON.parse(Cookies.get('userInfo'))
+        // 个性签名
+        console.log('456', JSON.parse(Cookies.get('userInfo')));
+        // 个人签名
+        const intro = $("textarea[name='intro']").val()
+        const age = $("input[name='age']").val()
+        const username = $("input[name='username']").val()
+        const row = await $.post('/keep', {
+            id,
+            password,
+            username,
+            intro,
+            avatar,
+            age
+        }).then(res => {
+            $("#username").text(username)
+            // $.get('/replace').then(res => {
+            //     $("#username").text(username)
+            //     console.log(res);
+            // })
+            layer.msg('保存成功', {
+                icon: 1
+            });
+            layer.close(index);
+            console.log('res', res);
+        })
+    })
+</script>
+<script>
+    // 修改密码
+    $('#revise').on('click', function () {
+        mould = `
+        <div class="layui-form-item" >
+            <label class="layui-form-label">原密码</label>
+            <div class="layui-input-inline" style="margin-top: 10px;">
+                <input type="password" name="oldpassword" lay-verify="title" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">新密码</label>
+            <div class="layui-input-inline">
+            <input type="password" name="newpassword"  lay-verify="title"  autocomplete="off" class="layui-input">
+        </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">确认新密码</label>
+            <div class="layui-input-inline">
+            <input type="password" name="affirmpassword"  lay-verify="title"  autocomplete="off" class="layui-input">
+        </div>
+        </div>
+        <div style="text-align:center;">
+            <button type="button" id="pwd" class="layui-btn lay-submit">立即提交</button>
+        </div>
+        `
+        index = layer.open({
+            title: '修改密码',
+            type: 1,
+            area: ['380px', '300px'], //宽高
+            content: mould,
+            success: function (layero, index) {
+                console.log(layero, index);
+            }
+        });
+    })
+
+    $(document).on('click', "#pwd", async () => {
+        const oldpassword = $("input[name='oldpassword']").val()
+        const newpassword = $("input[name='newpassword']").val()
+        const affirmpassword = $("input[name='affirmpassword']").val()
+        let {
+            id
+        } = JSON.parse(Cookies.get('userInfo'))
+        const row = await $.post('/revise', {
+            id,
+            oldpassword,
+            newpassword,
+            affirmpassword,
+            password
+        }).then(res => {
+            console.log(res);
+            let {
+                code,
+                lose
+            } = res
+
+            if (!newpassword == '' && !affirmpassword == '' && !oldpassword == '') {
+                if (code === -1) {
+                    layer.msg(lose, {
+                        icon: 2
+                    });
+                    return
+                }
+                if (newpassword == affirmpassword) {
+                    layer.msg('修改成功 即将退出...', {
+                        icon: 1
+                    });
+                    layer.close(index);
+                    setTimeout(() => {
+                        location.href = '/login'
+                    }, 500)
+                } else {
+                    layer.msg('新密码输入错误', {
+                        icon: 2
+                    });
+                }
+            } else {
+                layer.msg('请输入', {
+                    icon: 3
+                });
+            }
+        })
+    })
+</script>
+<script>
+
+</script>
 
 </html>

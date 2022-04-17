@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>德德后台管理系统</title>
   <link rel="stylesheet" href="/assets/layui/css/layui.css">
+  <link rel="stylesheet" href="/assets/css/lightbox.min.css">
+
 </head>
 
 <body>
@@ -18,7 +20,18 @@
 
     <div class="layui-body">
       <!-- 内容主体区域 -->
-      <div style="padding: 15px;">文章主体区域.</div>
+      <div style="padding: 15px;">
+        <a class="layui-btn layui-btn-radius newArticle" id="addArticle" href="/addArticle">添加文章</a>
+        <div class="search" style="display:flex;">
+          <div class="layui-form-item">
+            <div class="layui-input-block">
+              <input type="text" id="keyword" autocomplete="off" placeholder="请输入标题" class="layui-input">
+            </div>
+          </div>
+          <button class="layui-btn layui-btn-warn" id="search">立即搜索</button>
+        </div>
+        <table class="layui-hide" id="test" lay-filter="test"></table>
+      </div>
     </div>
 
     <div class="layui-footer">
@@ -27,6 +40,8 @@
     </div>
   </div>
   <script src="/assets/layui/layui.js"></script>
+  <script src="../assets/js/jquery.min.js"></script>
+  <script src="../assets/js/lightbox-plus-jquery.min.js"></script>
   <script>
     //JS 
     layui.use(['element', 'layer', 'util'], function () {
@@ -55,6 +70,198 @@
           });
         }
       });
+    });
+  </script>
+
+  <script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+  </script>
+
+  <script>
+    // 点击查看详情 弹窗显示内容
+    function showContent(mydata) {
+      let {
+        title,
+        content,
+        username,
+        publish_date
+      } = mydata;
+      console.log('123', mydata);
+      content = `<div style="padding:15px">
+        <h2 style="text-align: center;padding-block: 8px;">${title}</h2>
+        <div style="padding-block: 3px;">时间：${publish_date}</div>
+        <div style="padding-block: 3px;">作者：${username}</div>
+        <div style="text-indent: 35px;">${content}</div>
+      </div>`
+      //页面层
+      layer.open({
+        title, // 标题
+        content, // 内容
+        type: 1,
+        area: ['360px', '470px'], //宽高
+      });
+    }
+
+
+    layui.use('table', function () {
+      var table = layui.table;
+      table.render({
+        elem: '#test',
+        url: '/allarticle',
+        // count:  总数
+        // toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+        //   ,
+        // defaultToolbar: ['filter', 'exports', 'print', { //自定义头部工具栏右侧图标。如无需自定义，去除该参数即可
+        //   title: '提示',
+        //   layEvent: 'LAYTABLE_TIPS',
+        //   icon: 'layui-icon-tips'
+        // }],
+        // title: '用户数据表',
+        cols: [ // 表头
+          [{
+            type: 'checkbox',
+            fixed: 'left'
+          }, {
+            field: 'id',
+            title: 'ID',
+            fixed: 'left',
+            unresize: true,
+            sort: true
+          }, {
+            field: 'title',
+            title: '文章标题',
+            // edit: 'text'
+          }, {
+            field: 'content',
+            title: '内容',
+            templet: (data) => {
+              console.log('data', data);
+              // 转字符串类型
+              let mydata = JSON.stringify(data)
+              console.log('mydata', mydata)
+              return `<a href="javascript:;" onclick='showContent(${mydata})'>点击详情</a>`
+            },
+            // edit: 'text'   // 单元格编辑
+          }, {
+            field: 'username',
+            title: '发布者',
+            // edit: 'text',
+            sort: true
+          }, {
+            field: 'status',
+            title: '状态',
+            templet: (d) => {
+              var str = "";
+              if (d.status == 1) {
+                str = `<span style="color:#5ac991">审核通过</span>`
+              } else {
+                str = `<span style="color:#e9c341">审核中</span>`
+              }
+              return str
+            }
+          }, {
+            field: 'publish_date', // 修改为 add_time 会不显示 
+            title: '添加时间'
+          }, {
+            field: 'pic',
+            title: '封面图',
+            templet: ({
+              pic
+
+            }) => {
+              return `
+              <a class="example-image-link" href="${pic}" data-lightbox="example-set" data-title="Click the right half of the image to move forward.">
+              <img class="example-image" src="${pic}" alt=""/>
+              </a>
+              `
+            },
+            sort: true
+          }, {
+            field: 'text',
+            title: '所属分类',
+          }, {
+            field: 'right',
+            title: '操作',
+            toolbar: '#barDemo',
+            sort: true
+          }]
+        ],
+        page: {
+          prev: '上一页',
+          next: '下一页',
+          limit: 5,
+          page: 2
+        }
+      });
+
+
+      //头工具栏事件
+      table.on('toolbar(test)', function (obj) {
+        var checkStatus = table.checkStatus(obj.config.id);
+        switch (obj.event) {
+          case 'getCheckData':
+            var data = checkStatus.data;
+            layer.alert(JSON.stringify(data));
+            break;
+          case 'getCheckLength':
+            var data = checkStatus.data;
+            layer.msg('选中了：' + data.length + ' 个');
+            break;
+          case 'isAll':
+            layer.msg(checkStatus.isAll ? '全选' : '未全选');
+            break;
+
+            //自定义头工具栏右侧图标 - 提示
+          case 'LAYTABLE_TIPS':
+            layer.alert('这是工具栏右侧自定义的一个图标按钮');
+            break;
+        };
+      });
+
+      //监听行工具事件
+      table.on('tool(test)', async function (obj) {
+        var data = obj.data;
+        // console.log(obj)
+        if (obj.event === 'del') {
+          layer.confirm('确认删除吗?', async function (index) {
+            const {
+              id
+            } = data;
+            // console.log(data);
+            layer.close(index); // 关闭弹出层
+            const a = await $.post('/dlteArticle', {
+              id
+            }).then(res => {
+              layer.msg('删除成功', {
+                icon: 1
+              })
+              // 单独更新此表
+              table.reload('test')
+            })
+          });
+        } else if (obj.event === 'edit') {
+          // 显示文章编辑页面
+          location.href = '/editArticle?id=' + data.id
+        }
+      });
+
+      // 搜索
+      $("#search").on('click', () => {
+        // 1. 获取关键字
+        let keyword = $("#keyword").val()
+        // if($.trim(keyword) === ''){
+        //   layer.msg('搜索内容不能为空')
+        //   return;
+        // }
+        // 2. 发送ajax请求 通过重载表格来实现搜索
+        table.reload('test', {
+          where: {
+            keyword
+          } //设定异步数据接口的额外参数
+        });
+      })
+
 
     });
   </script>

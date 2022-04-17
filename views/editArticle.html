@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>德德后台管理系统</title>
+    <link rel="stylesheet" href="/assets/layui/css/layui.css">
+</head>
+<!-- <style>
+    #content :first-child div{
+    }
+</style> -->
+
+<body>
+    <div class="layui-layout layui-layout-admin">
+        <!-- 共享头部 -->
+        {{include "./share/shareHead.html"}}
+
+        <!-- 共享左部 -->
+        {{include "./share/shareBody.html"}}
+
+        <div class="layui-body">
+            <!-- 内容主体区域 -->
+            <div style="padding: 15px;">
+                <h1 style="margin: 10px 60px;">添加文章</h1>
+                <form class="layui-form" id="artForm" lay-filter="example">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">文章标题</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="请输入标题"
+                                class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">状态</label>
+                        <div class="layui-input-block">
+                            <input type="radio" name="status" value="0" title="审核中">
+                            <input type="radio" name="status" value="1" title="审核通过">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">封面图</label>
+                        <div class="layui-input-inline">
+                            <!-- onchange="uploadFile(this)"  内部加 this 是为了上传二进制文件-->
+                            <input type="file" name="pic" id="pic" onchange="uploadFile(this)" style="display:none">
+                            <a class="layui-btn" href="javascript:;" id="upload">上传文件</a>
+                            <img src="" id="preview" alt="" style="width:80px">
+                        </div>
+                    </div>
+
+                    <div style="position: relative; padding: 10px 0;">
+                        <div class="layui-form-item" style="position: absolute; top:0;left:0; margin: 33px 0;
+                        top: -31px;">
+                            <label class="layui-form-label">所属分类</label>
+                            <div class="layui-input-inline" style="z-index: 10002;">
+                                <select id="cate_id" name="cat_id">
+                                    <option value="0">未分类</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item layui-form-text" style="margin-top: 40px;">
+                        <label class="layui-form-label">内容</label>
+                        <div class="layui-input-block">
+                            <div id="content"></div>
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button type="button" class="layui-btn" id="submitForm">立即提交</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="layui-footer">
+            <!-- 底部固定区域 -->
+            底部固定区域
+        </div>
+    </div>
+
+</body>
+<script src="/assets/layui/layui.js"></script>
+<script src="../assets/js/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/wangeditor@latest/dist/wangEditor.min.js"></script>
+
+<script>
+    let isUpdPic = 0; //0=>不更新 1=>更新
+
+    // 上传文件
+    function uploadFile(fileEle) {
+        const file = fileEle.files[0];
+        console.log(file);
+        // 预览图片 base64
+        const fileReader = new FileReader();
+        fileReader.readAsDataURL(file) // 读取 异步过程 会触发 onload
+        fileReader.onload = function () {
+            const base64 = this.result
+            $("#preview").attr('src', base64)
+            isUpdPic = 1
+        }
+    }
+
+    // 富文本编辑器
+    let editor;
+
+    function initEditor() {
+        // 初始化富文本编辑器
+        const E = window.wangEditor
+        editor = new E('#content')
+        // 1. 上传文件会变成base64
+        editor.config.uploadImgShowBase64 = true
+        editor.config.uploadImgMaxSize = 1 * 1024 * 1024 // 0.5M
+        editor.config.uploadImgAccept = []
+        editor.config.uploadImgShowBase64 = true
+        // 2. 自己配置上传的接口，图片上传至自己的服务器
+        // editor.config.uploadImgServer = '/upload-img'
+        // 或者 const editor = new E( document.getElementById('div1') )
+        editor.create()
+    }
+    // 初始化富文本编辑器
+    initEditor();
+
+    // 拿到url的id
+    const reg = /\?id=(\d+)/
+    const [, id] = location.search.match(reg)
+    let oldPic;
+
+    layui.use(['element', 'layer', 'util'], async function () {
+        var element = layui.element,
+            layer = layui.layer,
+            util = layui.util,
+            $ = layui.$;
+        const form = layui.form;
+
+
+        //头部事件
+        util.event('lay-header-event', {
+            //左侧菜单事件
+            menuLeft: function (othis) {
+                layer.msg('展开左侧菜单的操作111', {
+                    icon: 0
+                });
+            },
+            menuRight: function () {
+                layer.open({
+                    type: 1,
+                    content: '<div style="padding: 15px;">处理右侧面板的操作234</div>',
+                    area: ['260px', '100%'],
+                    offset: 'rt' //右上角
+                        ,
+                    anim: 5,
+                    shadeClose: true
+                });
+            }
+        });
+
+        // 默认加载所有分类项
+        function classify() {
+            const rows = $.get('/classifys').then(res => {
+                let optionHtml = '<option value="0">未分类</option>';
+                res.forEach(item => {
+                    const {
+                        cat_id,
+                        text
+                    } = item
+                    console.log(cat_id, text);
+                    optionHtml += `<option value="${cat_id}">${text}</option>`
+                })
+                // 赋值
+                $("#cate_id").html(optionHtml)
+                form.render('select'); //需要渲染一下
+            })
+        }
+        classify()
+
+
+        // 上传文件按钮
+        $("#upload").on('click', () => {
+            $("#pic")[0].click();
+        })
+
+        // 根据id获取文章数据，进行回显
+        let result = await $.get('/fetchOneArt', {
+            id
+        })
+        console.log('11', result);
+        let {
+            title,
+            content,
+            cat_id,
+            author,
+            pic,
+            status,
+        } = result
+        // 回显表单数据
+        oldPic = pic
+        console.log('pic', pic);
+        form.val('example', {
+            title,
+            status,
+            cat_id
+        });
+        $("#preview").attr('src', pic)
+        editor.txt.html(result.content)
+
+
+        // 文章提交 内部有二进制文件和富文本内容
+        $('#submitForm').on('click', async () => {
+            // 1. 获取数据（文本和二进制、富文本数据）
+            const formData = new FormData($('#artForm')[0])
+            // 获取富文本内容
+            const content = editor.txt.html()
+            // 追加
+            formData.append('content', content)
+            formData.append('id', id)
+            formData.append('isUpdPic', isUpdPic)
+            formData.append('oldPic', oldPic)
+            // 二进制文件 发送Ajax请求
+            const lastData = await $.ajax({
+                url: "/updArtData",
+                type: 'post',
+                data: formData,
+                contentType: false,
+                processData: false
+            }).then(res => {
+                layer.msg('编辑文章成功', {
+                    icon: 1
+                })
+                setTimeout(() => {
+                    location.href = '/article'
+                }, 500);
+            })
+        })
+
+    });
+</script>
+
+</html>

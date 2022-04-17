@@ -7,6 +7,12 @@
   <title>德德后台管理系统</title>
   <link rel="stylesheet" href="/assets/layui/css/layui.css">
 </head>
+<style>
+  .new {
+    margin-top: 10px;
+    margin-left: 10px;
+  }
+</style>
 
 <body>
   <div class="layui-layout layui-layout-admin">
@@ -17,6 +23,7 @@
     {{include "./share/shareBody.html"}}
 
     <div class="layui-body ">
+      <button type="button" class="layui-btn layui-btn-radius new" id="newclassify">新增分类</button>
       <!-- 内容主体区域 -->
       <div style="padding: 15px;" id="classify_form">
         <table class="layui-hide layui-table" lay-data="{url:'/css', id:'test3', escape: true}" lay-filter="test3">
@@ -25,13 +32,13 @@
               <!-- 复选框 -->
               <!-- <th lay-data="{type:'checkbox'}">ID</th> -->
               <th lay-data="{field:'id', width:80, sort: true}">序号</th>
-              <th lay-data="{field:'title', width:120, sort: true, edit: 'text'}">标题</th>
-              <th lay-data="{field:'content', edit: 'text', minWidth: 150}">内容</th>
-              <th lay-data="{field:'author', width:80, edit: 'text'}">作者</th>
-              <th lay-data="{field:'status', edit: 'text', minWidth: 100}">状态</th>
-              <th lay-data="{field:'add_time', sort: true, edit: 'datetime'}">时间</th>
-              <th lay-data="{field:'pic', sort: true, edit: 'varchar'}">封面</th>
-              <th lay-data="{field:'cate_id', sort: true, edit: 'int'}">分类</th>
+              <th lay-data="{field:'title', width:120, sort: true, edit: 'text'}">标题title</th>
+              <th lay-data="{field:'content', edit: 'text', minWidth: 150}">内容content</th>
+              <th lay-data="{field:'author', edit: 'text', minWidth: 100}">作者author</th>
+              <th lay-data="{field:'status', sort: true, edit: 'varchar'}">状态status</th>
+              <th lay-data="{field:'add_time', sort: true, edit: 'int'}">时间add_time</th>
+              <th lay-data="{field:'cat_id', width:80, edit: 'text'}">分类cat_id</th>
+              <th lay-data="{field:'pic', sort: true, edit: 'int'}">封面pic</th>
               <th lay-data="{fixed: 'right',title: '操作',toolbar: '#barDemo',width: 150}"></th>
             </tr>
           </thead>
@@ -44,6 +51,8 @@
       底部固定区域
     </div>
   </div>
+
+
   <script src="/assets/layui/layui.js"></script>
   <script type="text/html" id="barDemo">
     <a class="layui-btn layui-btn-danger layui-btn-xs out" lay-event="del">删除</a>
@@ -76,27 +85,106 @@
         }
       });
 
+      // 添加
+      $('#newclassify').on('click', function () {
+        var index = layer.open({
+          type: 1,
+          skin: 'layui-layer-demo', //样式类名
+          closeBtn: 0, //不显示关闭按钮
+          anim: 0,
+          shadeClose: true, //开启遮罩关闭
+          area: ['390px', '580px'],
+          content: `
+        <div style="padding: 15px;">
+              <form class="layui-form" id="addGoodsForm">
+                  <div class="layui-form-item">
+                      <label class="layui-form-label">标题</label>
+                      <div class="layui-input-inline">
+                          <input type="text" name="name" required lay-verify="required" placeholder="标题" autocomplete="off"
+                              class="layui-input">
+                      </div>
+                  </div>
+                  <div class="layui-form-item layui-form-text">
+                      <label class="layui-form-label">内容</label>
+                      <div class="layui-input-block">
+                          <textarea name="intro" placeholder="请输入内容" class="layui-textarea"></textarea>
+                      </div>
+                  </div>
+                  <div class="layui-form-item">
+                      <label class="layui-form-label">作者</label>
+                      <div class="layui-input-inline">
+                          <!-- lay-verify="required" 开启必填 -->
+                          <input type="text" name="price" required lay-verify="required" placeholder="作者" autocomplete="off"
+                              class="layui-input">
+                      </div>
+                  </div>
+                  <div class="layui-form-item">
+                      <label class="layui-form-label">状态</label>
+                      <div class="layui-input-inline">
+                          <!-- lay-verify="required" 开启必填 -->
+                          <input type="text" name="prices" required lay-verify="required" placeholder="状态" autocomplete="off"
+                              class="layui-input">
+                      </div>
+                  </div>
+                  <div class="layui-form-item">
+                      <label class="layui-form-label">添加时间</label>
+                      <div class="layui-input-inline">
+                          <!-- lay-verify="required" 开启必填 -->
+                          <input type="text" autocomplete="off" name="add_time" id="add_time" required lay-verify="required" class="layui-input">
+                      </div>
+                  </div>
+                  <div class="layui-form-item">
+                      <label class="layui-form-label">封面</label>
+                      <div class="layui-input-inline">
+                          <input type="file" name="pic">
+                          <img src="" alt="" id="uploadsImg">
+                      </div>
+                  </div>
+                  
+                  <div class="layui-form-item">
+                      <label class="layui-form-label">分类</label>
+                      <div class="layui-input-inline">
+                          <!-- lay-verify="required" 开启必填 -->
+                          <input type="number" name="number" required lay-verify="required" placeholder="分类" autocomplete="off"
+                              class="layui-input">
+                      </div>
+                  </div>
+                  
+                  <div class="layui-form-item">
+                      <div class="layui-input-block">
+                          <button class="layui-btn" lay-submit lay-filter="addGoods">立即提交</button>
+                          <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                      </div>
+                  </div>
+              </form>
+          </div>
+          `
+        });
+      })
     });
   </script>
-  <!-- 获取数据库数据 -->
+
+  <!-- 删除 -->
   <script>
     layui.use('table', function () {
       var table = layui.table;
       //监听行工具事件
       table.on('tool(test3)', function (obj) {
         var data = obj.data;
-        console.log(obj)
         if (obj.event === 'del') {
           layer.confirm('确认删除吗？', function (index) {
             obj.del();
             layer.close(index);
-            let {data} = obj
+            let {
+              data
+            } = obj
             $.ajax({
               type: 'get',
-              url: `http://localhost:3000/deluser?id=${data.id}`
+              url: `http://127.0.0.1:3000/deluser?id=${data.id}`
+            }).then(res => {
+              layer.msg('删除成功')
             })
           });
-
         } else if (obj.event === 'edit') {
           layer.prompt({
             formType: 2,
@@ -109,57 +197,10 @@
           });
         }
       });
-      // table.render({
-      //   elem: '#test3',
-      //   url: '/css',
-      //   cols: [
-      //     [{
-      //       field: 'id',
-      //       width: 80,
-      //       title: '序号1',
-      //       sort: true
-      //     }, {
-      //       field: 'title',
-      //       width: 100,
-      //       title: '标题2'
-      //     }, {
-      //       field: 'content',
-      //       width: 80,
-      //       title: '内容3',
-      //       sort: true
-      //     }, {
-      //       field: 'author',
-      //       width: 80,
-      //       title: '作者4'
-      //     }, {
-      //       field: 'status',
-      //       title: '状态5',
-      //       minWidth: 150
-      //     }, {
-      //       field: 'add_time',
-      //       width: 80,
-      //       title: '时间6',
-      //       sort: true
-      //     }, {
-      //       field: 'pic',
-      //       width: 80,
-      //       title: '封面7',
-      //       sort: true
-      //     }, {
-      //       field: 'cate_id',
-      //       width: 80,
-      //       title: '分类8'
-      //     }, {
-      //       fixed: 'right',
-      //       title: '操作9',
-      //       toolbar: '#barDemo',
-      //       width: 150
-      //     }]
-      //   ]
-      // });
     });
   </script>
 
+  <!-- 编辑 -->
   <script>
     layui.use(['table', 'util'], function () {
       var table = layui.table,
@@ -170,11 +211,54 @@
         const {
           data
         } = obj;
-        console.log(obj);
-        await $.post('/edit', data)
-        console.log(data);
+        console.log('obj', obj);
+        await $.post('/edit', data).then(res => {
+          console.log(res);
+        })
+        console.log('data', data);
         layer.msg('编辑成功')
       });
+
+      layui.use('form', function () {
+        var form = layui.form;
+        var $ = layui.jquery;
+        var laydate = layui.laydate
+        var layer = layui.layer
+
+        // 初始化时间
+        //执行一个laydate实例
+        laydate.render({
+          elem: '#add_time', //指定元素
+          type: "datetime"
+        });
+
+        //监听提交事件
+        form.on('submit(addGoods)', function (data) {
+          // 获取数据
+          let formData = data.field;
+          console.log('1', formData.pic);
+          let pic = formData.pic
+          console.log(pic);
+          const formObj = new FormData(document.getElementById('addGoodsForm')) // 只拿到5个值
+          formObj.pic = `${pic}`
+          console.log('2', formObj);
+          // 关闭弹窗层
+          layer.close(layer.index);
+          $.ajax({
+            type: "post",
+            url: "http://127.0.0.1:3000/addGoods",
+            data: formObj,
+            processData: false, // 告诉jquery不需要处理数据
+            contentType: false, // 不需要设置编码
+            dataType: "json"
+          }).then(res => {
+            layer.msg('添加成功');
+            table.reload('test3')
+          })
+          // 默认跳转 表格才会消失
+          return false
+        })
+      })
     });
   </script>
 

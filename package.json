@@ -1,6 +1,10 @@
 {
   "dependencies": {
     "art-template": "^4.13.2",
-    "express-art-template": "^1.0.1"
+    "echarts": "^5.3.2",
+    "express-art-template": "^1.0.1",
+    "express-session": "^1.17.2",
+    "md5": "^2.3.0",
+    "moment": "^2.29.2"
   }
 }
